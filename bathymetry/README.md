@@ -6,9 +6,9 @@ The links below are to static renderings of the notebooks via
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
-* ##[newbathy.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/newbathy.ipynb)  
+* ##[newbathy.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/bathymetry/newbathy.ipynb)
     
-* ##[newbathyjan.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/newbathyjan.ipynb)  
+* ##[newbathyjan.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/bathymetry/newbathyjan.ipynb)
     
 ##License
 
