@@ -1,4 +1,5 @@
 from matplotlib import path
+from scipy import signal
 import numpy as np
 import time,os
 from IPython import embed
@@ -187,11 +188,84 @@ def binstobathy(boxi,boxj,x,y,z,NX,NY):
             for i in range(NX): # i coordinate matches
                 idx = (itmp == i)
                 if np.any(idx):
-                    # We've arrived at grid box i,j and we have at least 1 data point
-                    d            = ztmp[idx]
-                    bmin[j,i]    = np.min(d)
-                    bmax[j,i]    = np.max(d)
-                    bmean[j,i]   = np.mean(d)
-                    bmedian[j,i] = np.median(d)
-                    bcount[j,i]  = len(d)
+                    # We've arrived at grid box i,j and we have at least one value from the source bathy dataset
+                    d1 = ztmp[idx]                # source bathy points  
+                    nnz = np.count_nonzero(d1)    # count the nonzero values
+                    nz = len(d1) - nnz            # count the zero values
+                    if nnz > nz:                  # if we have more nonzeros than zeros
+                        inz = np.nonzero(d1)      #   find nonzero indices
+                        d = d1[inz]               #   extract the nonzero data, compute stats
+                        bmin[j,i]    = np.min(d)
+                        bmax[j,i]    = np.max(d)
+                        bmean[j,i]   = np.mean(d)
+                        bmedian[j,i] = np.median(d)
+                        bcount[j,i]  = nnz
     return bmin,bmax,bmean,bmedian,bcount.astype(np.int32)
+
+    
+    
+def bathyblend(a,b,c,wa,wb,wc):
+    # weighted blend of three bathy fields
+    def addw(s,w,x,xw):
+        if x>0:
+            s += xw*x
+            w += xw
+        return s,w
+    NY,NX = a.shape
+    out = np.zeros(a.shape)
+    for j in range(NY):
+        for i in range(NX):
+            s,w = 0,0
+            s,w = addw(s,w,a[j,i],wa)
+            s,w = addw(s,w,b[j,i],wb)
+            s,w = addw(s,w,c[j,i],wc)
+            if w>0:
+                out[j,i] = s/w
+    return out                
+    
+
+def lakefill(bathy):
+    # Reimplementation of JP's fill_in_lakes.m
+    # The strategy is to diffuse a tracer from the open boundary
+    # through the whole domain in 2D. Any non-land points that the tracer
+    # doesn't reach are lakes and we fill them.
+    idxland = bathy == 0           # Record initial land points
+    ocean = np.zeros(bathy.shape)   
+    ocean[0,:] = 1                 # Put tracer on southern boundary, except for
+    ocean[idxland]=0               # land points, meaning southern open bdy
+    flag, it = True, 0
+    stencil = np.array([[0,1,0],[1,0,1],[0,1,0]])  # diffusion schedule
+    while flag:
+        nocean = np.sum(ocean)
+        it += 1
+        ocean = signal.convolve2d(ocean, stencil, mode='same')  # Diffusion step
+        ocean[idxland]=0   # Reset land to zero
+        ocean[ocean>0]=1   # Anywhere that has tracer is now wet
+        flag = np.sum(ocean) > nocean
+    
+    idxwater = ocean == 1  # Define ocean as connected wet points
+    idxlakes = (~idxwater) & (~idxland)  # Lakes are not ocean and not land
+
+    bathyout = np.copy(bathy)
+    bathyout[idxlakes] = 0     # Fill the lakes
+
+    print ("Lakes filled in {} iterations".format(it))
+    return bathyout
+
+import itertools
+def channelfill(bathy):
+    # Reimplementation of JP's remove_channels.m
+    bathyout = np.copy(bathy)
+    ny,nx = bathy.shape
+    flag, it = True, 0
+    while flag:
+        it += 1
+        flag = False
+        for j, i in itertools.product(range(1,ny-1), range(1,nx-1)):
+            chki = bathyout[j  ,i+1] == 0 and bathyout[j  ,i-1] == 0
+            chkj = bathyout[j+1,i  ] == 0 and bathyout[j-1,i  ] == 0
+            if chki or chkj:
+                if bathyout[j,i] > 0: flag = True
+                bathyout[j,i]=0
+    print ("Channels filled in {} iterations".format(it))
+    return bathyout
