@@ -2,6 +2,7 @@ import numpy as np
 import netCDF4 as nc
 import os
 from pyproj import Proj
+from IPython import embed
 
 def getnemo(filename,fillmissing=False):
     # Loads bathy from a NEMO netcdf file
@@ -15,7 +16,7 @@ def getnemo(filename,fillmissing=False):
 
 
 def getchs(filename):
-    # Load CHS data, cache in a .npz file for faster loading
+    # Load CHS data ("Salish Sea 25m Grid.txt"), cache in a .npz file for faster loading
     cache=filename+".npz"
     if os.path.exists(cache):
         npzfile = np.load(cache)
@@ -25,6 +26,26 @@ def getchs(filename):
         x, y, z = np.float32(a[:,0]), np.float32(a[:,1]), a[:,2]
         np.savez(cache, x=x, y=y, z=z)
     p = Proj("+proj=utm +zone=10U")    # UTM to lon, lat using zone 10U
+    return x,y,z,p
+
+
+def getchs2(filename):
+    # Load a file from Data_From_Mitchell_CHS, cache in a .npz file for faster loading
+    cache=filename+".npz"
+    if os.path.exists(cache):
+        npzfile = np.load(cache)
+        x, y, z = npzfile['x'], npzfile['y'], npzfile['z']
+    else:
+        with open(filename, 'r') as f:
+            hdrline = f.readline()
+        if hdrline.startswith ('#NGH'):
+            # Special case for Fraser_NAD83_CGVD28_all.txt
+            a = np.loadtxt(filename, skiprows=4, usecols=[1,2,4])
+        else:
+            a = np.loadtxt(filename, delimiter=',', usecols=[1,0,2])
+        x, y, z = a[:,0], a[:,1], a[:,2]
+        np.savez(cache, x=x, y=y, z=z)
+    p = None
     return x,y,z,p
 
 

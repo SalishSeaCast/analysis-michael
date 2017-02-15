@@ -1,5 +1,6 @@
 from matplotlib import path
 from scipy import signal
+import netCDF4 as nc
 import numpy as np
 import time,os
 from IPython import embed
@@ -233,6 +234,7 @@ def lakefill(bathy):
     ocean = np.zeros(bathy.shape)   
     ocean[0,:] = 1                 # Put tracer on southern boundary, except for
     ocean[idxland]=0               # land points, meaning southern open bdy
+
     flag, it = True, 0
     stencil = np.array([[0,1,0],[1,0,1],[0,1,0]])  # diffusion schedule
     while flag:
@@ -269,3 +271,27 @@ def channelfill(bathy):
                 bathyout[j,i]=0
     print ("Channels filled in {} iterations".format(it))
     return bathyout
+
+def writebathy(filename,glamt,gphit,bathy):
+
+    bnc = nc.Dataset(filename, 'w', clobber=True)
+    NY,NX = glamt.shape
+
+    # Create the dimensions
+    bnc.createDimension('x', NX)
+    bnc.createDimension('y', NY)
+
+    bnc.createVariable('nav_lon', 'f', ('y', 'x'), zlib=True, complevel=4)
+    bnc.variables['nav_lon'].setncattr('units', 'degrees_east')
+
+    bnc.createVariable('nav_lat', 'f', ('y', 'x'), zlib=True, complevel=4)
+    bnc.variables['nav_lat'].setncattr('units', 'degrees_north')
+
+    bnc.createVariable('Bathymetry', 'd', ('y', 'x'), zlib=True, complevel=4, fill_value=0)
+    bnc.variables['Bathymetry'].setncattr('units', 'metres')
+
+    bnc.variables['nav_lon'][:] = glamt
+    bnc.variables['nav_lat'][:] = gphit
+    bnc.variables['Bathymetry'][:] = bathy
+
+    bnc.close()
