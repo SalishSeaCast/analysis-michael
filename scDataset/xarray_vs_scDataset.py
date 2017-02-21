@@ -24,26 +24,23 @@ days = ['{:02d}mar16'.format(x) for x in range(5,12)]
 files = gethourlyfiles(prefix, days, 'grid_T')
 print("Found {} files".format(len(files)))
 
+t0 = time.time()
+
 if sys.argv[1] == "scDataset":
-    t0 = time.time()
     ds = scDataset(files)
     t  = ds.variables['votemper'][:,:,500,250]
     ds.close()
-    mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    print("scDataset        , {:.2f}s, Peak Memory Usage {:.2f} MB".format(time.time()-t0, mem/1024.0))
-
 if sys.argv[1] == "xarray":
-    t0 = time.time()
     ds = xr.open_mfdataset(files)
     t  = ds.variables['votemper'][:,:,500,250].values
     ds.close()
-    mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-    print("xr.open_mfdataset, {:.2f}s, Peak Memory Usage {:.2f} MB".format(time.time()-t0, mem/1024.0))
+
+mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+print("{:10s}, {:.2f}s, Peak Memory Usage {:.2f} MB".format(sys.argv[1], time.time()-t0, mem/1024.0))
 
 # Benchmark results at salish:
 #
 # Found 7 files
-# scDataset        , 27.68s, Peak Memory Usage 227.39 MB
-#
+# scDataset , 27.58s, Peak Memory Usage 227.46 MB
 # Found 7 files
-# xr.open_mfdataset, 39.98s, Peak Memory Usage 19828.78 MB
+# xarray    , 38.81s, Peak Memory Usage 19833.56 MB
