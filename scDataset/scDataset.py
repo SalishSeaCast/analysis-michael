@@ -1,6 +1,5 @@
 import netCDF4 as nc
 import numpy as np
-from IPython import embed
 from collections import OrderedDict
 
 class scDataset(object):
@@ -108,7 +107,7 @@ class scDataset(object):
         """
         for ds in self._datasets:
             ds.close()
-        self._datasets,self._vars,self.shape=[],[],[]
+        self._datasets,self._vars=[],[]
 
     def __del__(self):
         self.close()
