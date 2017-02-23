@@ -127,7 +127,7 @@ for watershed in watersheds:
         print("Old position {}".format((i0,j0)))
         print("New position {}".format((i1,j1)))
         di,dj = 0,0
-        while False:
+        while True:
             plotrvr(i1,j1,i0,j0)
             action = getaction()
             if action is "quit": exit()
