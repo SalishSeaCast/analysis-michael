@@ -1,6 +1,8 @@
 import netCDF4 as nc
 import numpy as np
 from collections import OrderedDict
+from resource import getrlimit, RLIMIT_NOFILE
+
 
 class scDataset(object):
     def __init__(self, files):
@@ -64,74 +66,107 @@ class scDataset(object):
         !! EXPERIMENTAL !!
 
         """
-        # Open all of the datasets        
-        self._datasets=[nc.Dataset(f,'r') for f in files]
+        # Initialize a dataset manager with the list of files
+        self._dsmgr = _scDatasetManager(files)
 
-        # Set a few class variables
-        d0=self._datasets[0]
+        # Open the first dataset and set a few class variables
+        d0 = self._dsmgr[0]
         self.description = d0.description
         self.file_format = d0.file_format
         self.filepath    = files
 
         # Find the time dimension name
-        for dim in d0.dimensions.keys():
+        for dim in d0.dimensions:
             if d0.dimensions[dim].isunlimited():
                 timename = dim
                 break
 
-        # Get the indices
-        fi = []   # file (dataset) index
-        li = []   # local time index
-        for di,d in enumerate(self._datasets):
-            curlen = d.variables[timename].shape[0]
+        # Open each dataset, get time dimension size and set the indices fi and li
+        fi = []  # file (dataset) index
+        li = []  # local time index
+        for di in range(len(files)):
+            curlen = self._dsmgr[di].variables[timename].shape[0]
             fi += [di for x in range(curlen)]
             li += [x for x in range(curlen)]
 
-        # The first dimension must be the unlimited dimension, else we
-        # pass through to the first dataset
+        # First dimension must be unlimited, else use the first dataset
         self.variables = OrderedDict()
-        for vname in d0.variables.keys():
-            if d0.variables[vname].dimensions[0] == timename:
+        vars0 = d0.variables
+        for vname in vars0:
+            if vars0[vname].dimensions[0] == timename:
                 # We concatenate this variable
-                varlist = [ds.variables[vname] for ds in self._datasets]
-                self.variables[vname] = scVariable(varlist, fi, li)
+                self.variables[vname] = scVariable(vars0[vname], self._dsmgr, fi, li)
             else:
                 # Passthrough this variable to the first file
-                self.variables[vname] = d0.variables[vname]
-
+                self.variables[vname] = vars0[vname]
 
     def close(self):
-        """
-        Closes the datasets. This may be useful when opening many datasets to
-        keep the number of open files under control.
-        """
-        for ds in self._datasets:
-            ds.close()
-        self._datasets,self._vars=[],[]
+        self._dsmgr.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
 
     def __del__(self):
         self.close()
 
 
+class _scDatasetManager(object):
+    """
+    Manages datasets by opening/closing them on demand
+    """
+
+    def __init__(self, files):
+        self._files   = files
+        self._MAXOPEN = getrlimit(RLIMIT_NOFILE)[0] // 5
+        self._dslist  = [(-1, None)] * self._MAXOPEN
+
+    def __getitem__(self, di):
+        """
+        Input is an integer index di, we return the corresponding nc.Dataset
+        Also we cache open datasets to economize on opening/closing them
+        """
+        # Compute slot index (circular buffer; and index 0 is always kept open)
+        si = 1 + (di - 1) % (self._MAXOPEN - 1) if di > 0 else 0
+
+        # Check what is currently stored in slot si
+        ci, ds = self._dslist[si]
+        if ci != di:
+            if ds is not None:
+                # Repurpose slot si for the requested dataset
+                ds.close()
+            # Now open the requested dataset and store it in slot si
+            ds = nc.Dataset(self._files[di], 'r')
+            self._dslist[si] = (di, ds)
+        return ds
+
+    def close(self):
+        for di, ds in self._dslist:
+            if ds is not None:
+                ds.close()
+        self._dslist = []
+
+
 class scVariable(object):
     """
-    Builds a concatenated version of several netCDF Variable types
-     - We aim to have correct indexing, and set a few class variables
-       such as shape correctly. Attribute handling, etc is not implemented.
+    Builds a concatenated version of a netCDF Variable type
+     - We aim to have correct indexing, and set a few class variables such as
+       shape and dimensions correctly. Attribute handling, etc is not implemented.
     """
-    def __init__(self, varlist, fi, li):
-        self._vars = varlist
+
+    def __init__(self, v0, datasets, fi, li):
+        self.ds = datasets
         self._fi = fi
         self._li = li
 
         # Set a few class variables
-        v0 = varlist[0]
         self.name       = v0.name
         self.dimensions = v0.dimensions
         self.dtype      = v0.dtype
         self.ndim       = v0.ndim
-        self.size       = np.sum([v.size for v in varlist])
-        self.shape      = (len(self._fi),) + v0.shape[1:]
+        self.shape      = (len(self._fi), ) + v0.shape[1:]
 
     def __getitem__(self, items):
         """
@@ -139,46 +174,48 @@ class scVariable(object):
         """
         # Make the input iterable
         if not isinstance(items, tuple):
-            items=[items]
+            items = [items]
 
         # Check number of dimensions
         ndim = len(items)
-        if self.ndim != ndim: print("Number of dimensions mismatch")
+        if self.ndim != ndim:
+            raise ValueError("Mismatch between requested dimensions and variable dimensions")
 
         # Find the time indices
         ti = items[0]      # global time indices to extract, may be int or slice
         fi = self._fi[ti]  # index of each file (dataset) to draw from
-        li = self._li[ti]  # local time index for this dataset
+        li = self._li[ti]  # local time index for each dataset
 
         # For single time output (no concatenation), just draw from the right dataset
         if type(ti) is int:
-            if ndim==1:
-                out = self._vars[fi][li]
-            if ndim==2:
-                out = self._vars[fi][li, items[1]]
-            if ndim==3:
-                out = self._vars[fi][li, items[1], items[2]]
-            if ndim==4:
-                out = self._vars[fi][li, items[1], items[2], items[3]]
+            if ndim == 1:
+                out = self.ds[fi][self.name][li]
+            if ndim == 2:
+                out = self.ds[fi][self.name][li, items[1]]
+            if ndim == 3:
+                out = self.ds[fi][self.name][li, items[1], items[2]]
+            if ndim == 4:
+                out = self.ds[fi][self.name][li, items[1], items[2], items[3]]
             return out
 
         # If we need to concatenate, then we need to determine the output
         # array size. This approach is an ugly hack but it works.
-        sizo = [1]*ndim  # assume one in each dimension
-        for ii,item in enumerate(items):
-            if type(item) is not int:  # update output size at this dim if not an integer index
-                tmp = [None]*self.shape[ii]   # build a dummy array
+        sizo = [1] * ndim  # assume one in each dimension
+        for ii, item in enumerate(items):
+            if type(item) is not int:         # update output size at this dim if not an integer index
+                tmp = [None] * self.shape[ii] # build a dummy array
                 sizo[ii] = len(tmp[item])     # index the dummy array, record length
-        out = np.squeeze(np.zeros(sizo,self.dtype)) # remove singleton dimensions
+        out = np.zeros(sizo, self.dtype)      # allocate output array with matching data type
+        out = np.squeeze(out)  # remove singleton dimensions
 
         # Now we read each time index sequentially and fill the output array
         for ii in range(len(fi)):
-            if ndim==1:
-                out[ii]     = self._vars[ fi[ii] ][li[ii]]
-            if ndim==2:
-                out[ii,...] = self._vars[ fi[ii] ][li[ii], items[1]]
-            if ndim==3:
-                out[ii,...] = self._vars[ fi[ii] ][li[ii], items[1], items[2]]
-            if ndim==4:
-                out[ii,...] = self._vars[ fi[ii] ][li[ii], items[1], items[2], items[3]]
+            if ndim == 1:
+                out[ii] = self.ds[fi[ii]][self.name][li[ii]]
+            if ndim == 2:
+                out[ii, ...] = self.ds[fi[ii]][self.name][li[ii], items[1]]
+            if ndim == 3:
+                out[ii, ...] = self.ds[fi[ii]][self.name][li[ii], items[1], items[2]]
+            if ndim == 4:
+                out[ii, ...] = self.ds[fi[ii]][self.name][li[ii], items[1], items[2], items[3]]
         return out
