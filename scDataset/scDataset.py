@@ -40,30 +40,24 @@ class scDataset(object):
         Example usage:
 
         # Get the (concatenated) output times
-        ds = scDataset(files)
-        t = ds.variables['time_counter'][:]
-        ds.close()
+        with scDataset(files) as ds:
+            t = ds.variables['time_counter'][:]
 
         # Get temperature at all times and all depth at one location
-        ds = scDataset(files)
-        temper = ds.variables['votemper'][:,:,100,100]
-        ds.close()
+        with scDataset(files) as ds:
+            temper = ds.variables['votemper'][:,:,100,100]
 
         # Load surface salinity at each time in a loop for plotting/animation
-        ds = scDataset(files)
-        for ti in range(ds.variables['vosaline'].shape[0]):
-            print("Loading time "+str(ti))
-            surfsal = ds.variables['vosaline'][ti,0,:,:]
-            # make_a_plot(surfsal)
-        ds.close()
+        with scDataset(files) as ds:
+            for ti in range(ds.variables['vosaline'].shape[0]):
+                print("Loading time "+str(ti))
+                surfsal = ds.variables['vosaline'][ti,0,:,:]
+                # make_a_plot(surfsal)
 
         # Demo to show that normal Python indexing and slicing works
-        ds = scDataset(files)
-        t1 = ds.variables['votemper'][29:33:-1,-10:-1,100:130]
-        print(t1.shape)
-        ds.close()
-
-        !! EXPERIMENTAL !!
+        with scDataset(files) as ds:
+            t1 = ds.variables['votemper'][29:33:-1,-10:-1,100:130]
+            print(t1.shape)
 
         """
         # Initialize a dataset manager with the list of files
