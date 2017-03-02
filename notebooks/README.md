@@ -8,10 +8,11 @@ Descriptions under the links below are from the first cell of the notebooks
 
 * ##[LandProcessorElimination.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/LandProcessorElimination.ipynb)  
     
+* ##[FraserFlow.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/FraserFlow.ipynb)
 
 ##License
 
-These notebooks and files are copyright 2013-2016
+These notebooks and files are copyright 2013-2017
 by the Salish Sea MEOPAR Project Contributors
 and The University of British Columbia.
 
