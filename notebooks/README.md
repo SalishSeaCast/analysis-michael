@@ -6,9 +6,12 @@ The links below are to static renderings of the notebooks via
 Descriptions under the links below are from the first cell of the notebooks
 (if that cell contains Markdown or raw text).
 
+* ##[GetContourForWCVI.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/GetContourForWCVI.ipynb)  
+    
 * ##[LandProcessorElimination.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/LandProcessorElimination.ipynb)  
     
-* ##[FraserFlow.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/FraserFlow.ipynb)
+* ##[FraserFlow.ipynb](https://nbviewer.jupyter.org/urls/bitbucket.org/salishsea/analysis-michael/raw/tip/notebooks/FraserFlow.ipynb)  
+    
 
 ##License
 
