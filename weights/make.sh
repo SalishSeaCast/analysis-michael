@@ -21,25 +21,16 @@
 #ifort get_weight_nemo.o map.o grid.o -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
 
 #- On Anchor (Dalhousie)
-LIBNETCDF=/opt/netcdf-g95/                  
-g95 -c grid.f90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-g95 -c map.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-g95 -c get_weight_nemo.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-g95 get_weight_nemo.o map.o grid.o -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-
+#LIBNETCDF=/opt/netcdf-g95/
+#g95 -c grid.f90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
+#g95 -c map.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
+#g95 -c get_weight_nemo.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
+#g95 get_weight_nemo.o map.o grid.o -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
 
 #- On salish (UBC)
-# LIBNETCDF=/usr
-# mpif90 -c grid.f90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-# mpif90 -c map.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-# mpif90 -c get_weight_nemo.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-# mpif90 -o get_weight_nemo get_weight_nemo.o map.o grid.o -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf -lnetcdff
-
-
-#gfortran -c grid.f90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-#gfortran -c map.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-#gfortran -c get_weight_nemo.F90 -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-#gfortran get_weight_nemo.o map.o grid.o -I${LIBNETCDF}/include -L${LIBNETCDF}/lib -lnetcdf
-
-
+gfortran -c -O2 grid.f90 -I/usr/include
+gfortran -c -O2 map.F90 -I/usr/include
+gfortran -c -O2 get_weight_nemo.F90 -I/usr/include
+gfortran -o get_weight_nemo get_weight_nemo.o map.o grid.o -lnetcdff
+rm -f *.o *.mod
 
