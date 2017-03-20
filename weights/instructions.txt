@@ -1,0 +1,20 @@
+Instructions for making a weights file
+
+1) Put a copy of bathy_meter.nc here
+
+2) Copy a surface forcing file here
+
+   cp ~/MEOPAR/WCVI_surface/ops_y2017m01d01.nc ops.nc
+
+3) Compile the tool
+
+   ./make.sh
+
+4) Run the tool
+
+   ./get_weight_nemo
+
+5) Run the weights-file improver
+
+   python improveweights.py
+
