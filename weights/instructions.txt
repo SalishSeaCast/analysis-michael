@@ -4,7 +4,7 @@ Instructions for making a weights file
 
 2) Copy a surface forcing file here
 
-   cp ~/MEOPAR/WCVI_surface/ops_y2017m01d01.nc ops.nc
+   cp /data/mdunphy/WCVI/WCVI_surface/ops_y2017m01d01.nc ops.nc
 
 3) Compile the tool
 
