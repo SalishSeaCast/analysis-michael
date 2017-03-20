@@ -1,0 +1,15 @@
+!-----------------------------------------------------------------------
+&namsbc_core   !   namsbc_core  CORE bulk formulea
+!-----------------------------------------------------------------------
+!              !   file name   variable   !  clim   ! 'yearly'/ 
+!              !                 name     !  (T/F)  ! 'monthly' 
+   sn_wndi     = 'u10_y2002m01d01'         ,'u_wind'    , .true.  , 'yearly'
+   sn_wndj     = 'v10_y2002m01d01'         ,'v_wind'    , .true.  , 'yearly'
+   sn_qsr      = 'qsw_y2002m01d01'         ,'solar'     , .true.  , 'yearly'
+   sn_qlw      = 'qlw_y2002m01d01'         ,'therm_rad' , .true.  , 'yearly'
+   sn_tair     = 't2_y2002m01d01'          ,'tair'      , .true.  , 'yearly'
+   sn_humi     = 'q2_y2002m01d01'          ,'qair'      , .true.  , 'yearly'
+   sn_prec     = 'snow_precip_y2002m01d01' ,'precip'    , .true.  , 'yearly'
+   sn_snow     = 'snow_precip_y2002m01d01' ,'snow'      , .true.  , 'yearly'
+   cn_dir      = '/home/jpaquin/scratch/DATA/GEMrecast_SAMPLE/'      !  root directory for the location of the bulk files
+/
