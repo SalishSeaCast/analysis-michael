@@ -1,4 +1,7 @@
-Instructions for making a weights file
+Instructions for making a weights file, based on the instructions found here:
+
+  https://salishsea-meopar-docs.readthedocs.io/en/latest/code-notes/salishsea-nemo/nemo-forcing/atmospheric.html
+
 
 1) Put a copy of bathy_meter.nc here
 
