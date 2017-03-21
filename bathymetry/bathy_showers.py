@@ -34,11 +34,12 @@ def shwz(a,b,c,d):  # plot a, mask b, colorbar limits c, title d
 
 
 # Also with Fraser river zoom, but with lat,lon, such that we can easily draw rivers
-def shwll(xf,yf,a,b,c,d):  # plot a, mask b, colorbar limits c, title d
+def shwll(xf,yf,a,b,c,d,z=True):  # plot a, mask b, colorbar limits c, title d, zoom
     if b is None: b=mm(a)
     xfe, yfe = expandf(xf, yf)
     im=plt.pcolormesh(xfe[:-1,:-1],yfe[:-1,:-1],b*0+a); cb=plt.colorbar(im);
     im.set_cmap(cmocean.cm.haline); im.set_clim([0,c]); cb.set_clim(0,c); plt.title(d)
-    plt.gca().set_xlim(-123.4,-122.6)
-    plt.gca().set_ylim(48.9,49.5)
+    if z:
+        plt.gca().set_xlim(-123.4,-122.6)
+        plt.gca().set_ylim(48.9,49.5)
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
