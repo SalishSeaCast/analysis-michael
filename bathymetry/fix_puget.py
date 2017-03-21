@@ -16,7 +16,7 @@ cnc.close()
 glamfe, gphife = expandf(glamf, gphif)
 
 # Load M0 bathy that has erroneous land cells in Puget Sound region
-with nc.Dataset('/home/mdunphy/MEOPAR/Bathy/bathy_meter_SalishSeaM0.nc', 'r') as bnc:
+with nc.Dataset('/home/mdunphy/MEOPAR/WORK/Bathy-201702/bathy_meter_SalishSeaM0.nc', 'r') as bnc:
     bathy = bnc.variables['Bathymetry'][:]
     bathyM0 = np.copy(bathy)
 
