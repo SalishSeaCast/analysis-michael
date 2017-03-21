@@ -1,0 +1,29 @@
+Instructions to run the grib_to_netcdf nowcast worker to reprocess the grib collection for WCVI
+
+1) Set up the SalishSeaNowcast system following the instructions here
+   https://salishsea-nowcast.readthedocs.io/en/latest/pkg_development.html
+
+2) Copy wcvi.yaml to $HOME/MEOPAR/SalishSeaNowcast/config and edit paths as needed
+   Ensure that the destination directory specified in wcvi.yaml exists ("ops dir")
+
+3) Edit generatejobs.sh, uncomment the serial or parallel line in the loop
+
+4a) If serial, simply run:
+
+    bash jobs.txt
+
+4b) If parallel, use the modified version of the nowcast worker
+    "grib_to_netcdf.py" from this repo to replace the copy in
+
+    $HOME/MEOPAR/SalishSeaNowcast/nowcast/workers
+
+    ** Caution ** 
+    The modified grib_to_netcdf.py here was checked out in March 2017, and you may need to re-apply the
+    edits in the event that grib_to_netcdf.py has evolved. This commit shows the modifications:
+
+    https://bitbucket.org/salishsea/analysis-michael/commits/45f004ff53f842be654a6352756f87ff7a462b09
+
+    Now run the jobs in parallel with:  
+
+    parallel -k -j 12 :::: jobs.txt
+
