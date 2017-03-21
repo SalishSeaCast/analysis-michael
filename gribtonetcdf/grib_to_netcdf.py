@@ -48,8 +48,9 @@ wgrib2_logger = logging.getLogger('wgrib2')
 # for the Salish Sea NEMO model.
 # The Fraser is excluded because real-time gauge data at Hope are
 # available for it.
-IST, IEN = 110, 365
-JST, JEN = 20, 285
+IST, IEN = 1, 300   # wgrib2 uses 1-based indexing
+JST, JEN = 1, 400
+
 # Position of Sandheads
 SandI, SandJ = 151, 136
 
@@ -177,29 +178,6 @@ def _define_forecast_segments_nowcast(rundate):
     subdirectory = ['']
     yearmonthday = [today.strftime('y%Ym%md%d')]
 
-    # tomorrow (forecast)
-    p1 = os.path.join(today.format('YYYYMMDD'), '12')
-    logger.debug('tomorrow forecast section: {}'.format(p1))
-    fcst_section_hrs_arr[1] = OrderedDict([
-        # (part, (dir, start hr, end hr))
-        ('section 1', (p1, -1, 24-12-1, 24+23-12)),
-    ])
-    zerostart.append([])
-    length.append(24)
-    subdirectory.append('fcst')
-    yearmonthday.append(tomorrow.strftime('y%Ym%md%d'))
-
-    # next day (forecast)
-    p1 = os.path.join(today.format('YYYYMMDD'), '12')
-    logger.debug('next day forecast section: {}'.format(p1))
-    fcst_section_hrs_arr[2] = OrderedDict([
-        # (part, (dir, start hr, end hr))
-        ('section 1', (p1, -1, 24+24-12-1, 24+24+12-12)),
-    ])
-    zerostart.append([])
-    length.append(13)
-    subdirectory.append('fcst')
-    yearmonthday.append(nextday.strftime('y%Ym%md%d'))
     return (fcst_section_hrs_arr, zerostart, length, subdirectory,
             yearmonthday)
 
@@ -255,14 +233,15 @@ def _rotate_grib_wind(config, fcst_section_hrs):
     # create a symbolic link to keep it happy (if its not already there)
     try:
         os.symlink(wgrib2, 'wgrib2')
-    except OSError:
+    except:
         pass
     for day_fcst, realstart, start_hr, end_hr in fcst_section_hrs.values():
         for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
             sfhour = '{:03d}'.format(fhour)
-            outuv = os.path.join(GRIBdir, day_fcst, sfhour, 'UV.grib')
-            outuvrot = os.path.join(GRIBdir, day_fcst, sfhour, 'UVrot.grib')
+            suff = '_pid_' + str(os.getpid())
+            outuv = os.path.join(GRIBdir, day_fcst, sfhour, 'UV.grib'+suff)
+            outuvrot = os.path.join(GRIBdir, day_fcst, sfhour, 'UVrot.grib'+suff)
             # Delete residual instances of files that are created so that
             # function can be re-run cleanly
             try:
@@ -300,7 +279,6 @@ def _rotate_grib_wind(config, fcst_section_hrs):
             cmd.append(outuvrot)
             lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outuv)
-    os.unlink('wgrib2')
     logger.debug('consolidated and rotated wind components')
 
 
@@ -314,14 +292,18 @@ def _collect_grib_scalars(config, fcst_section_hrs):
     grid_defn = config['weather']['grid_defn.pl']
     # grid_defn.pl expects to find wgrib2 in the pwd,
     # create a symbolic link to keep it happy
-    os.symlink(wgrib2, 'wgrib2')
+    try:
+        os.symlink(wgrib2, 'wgrib2')
+    except:
+        pass
     for day_fcst,  realstart, start_hr, end_hr in fcst_section_hrs.values():
         for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
             sfhour = '{:03d}'.format(fhour)
-            outscalar = os.path.join(GRIBdir, day_fcst, sfhour, 'scalar.grib')
+            suff = '_pid_' + str(os.getpid())
+            outscalar = os.path.join(GRIBdir, day_fcst, sfhour, 'scalar.grib'+suff)
             outscalargrid = os.path.join(
-                GRIBdir, day_fcst, sfhour, 'gscalar.grib')
+                GRIBdir, day_fcst, sfhour, 'gscalar.grib'+suff)
             # Delete residual instances of files that are created so that
             # function can be re-run cleanly
             try:
@@ -346,7 +328,6 @@ def _collect_grib_scalars(config, fcst_section_hrs):
             cmd.append(outscalargrid)
             lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
             os.remove(outscalar)
-    os.unlink('wgrib2')
     logger.debug('consolidated and re-gridded scalar variables')
 
 
@@ -378,9 +359,10 @@ def _concat_hourly_gribs(config, ymd, fcst_section_hrs):
         for fhour in range(start_hr, end_hr + 1):
             # Set up directories and files
             sfhour = '{:03d}'.format(fhour)
-            outuvrot = os.path.join(GRIBdir, day_fcst, sfhour, 'UVrot.grib')
+            suff = '_pid_' + str(os.getpid())
+            outuvrot = os.path.join(GRIBdir, day_fcst, sfhour, 'UVrot.grib'+suff)
             outscalargrid = os.path.join(
-                GRIBdir, day_fcst, sfhour, 'gscalar.grib')
+                GRIBdir, day_fcst, sfhour, 'gscalar.grib'+suff)
             if (fhour == start_hr and realstart == -1):
                 cmd = [wgrib2, outuvrot, '-append', '-grib', outzeros]
                 lib.run_in_subprocess(cmd, wgrib2_logger.debug, logger.error)
