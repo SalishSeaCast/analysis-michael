@@ -56,13 +56,13 @@ with nc.Dataset(met_gem_weight,'r') as src, nc.Dataset(netcdf4_weight, 'w') as w
         wname = 'wgt{:02d}'.format(i+1)
         s[:] = src.variables[sname][:]
         s.units = 1
-        s.long_name = '{} Grid Index 1 (Flattened)'.format(atmos_grid_name)
+        s.long_name = '{} Grid Index {} (Flattened)'.format(atmos_grid_name,i+1)
         s.valid_range = np.array(
             (np.min(src.variables[sname]), np.max(src.variables[sname])))
         
         w[:] = src.variables[wname][:]
         w.units = 1
-        w.long_name = 'Salish Sea Grid Weights for src01'
+        w.long_name = 'Salish Sea Grid Weights for {}'.format(sname)
         w.valid_range = np.array(
             (np.min(src.variables[wname]), np.max(src.variables[wname])))
     
