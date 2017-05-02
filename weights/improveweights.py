@@ -42,12 +42,12 @@ with nc.Dataset(met_gem_weight,'r') as src, nc.Dataset(netcdf4_weight, 'w') as w
     lats[:] = src.variables['nav_lat'][:]
     lats.units = 'degrees_north'
     lats.long_name = 'Latitude'
-    lats.valid_range = np.array((-90.0, 90.0))
+    lats.valid_range = (np.min(lats[:]), np.max(lats[:]))
         
     lons[:] = src.variables['nav_lon'][:]
     lons.units = 'degrees_east'
     lons.long_name = 'Longitude'
-    lons.valid_range = np.array((0., 360.))
+    lons.valid_range = (np.min(lons[:]), np.max(lons[:]))
 
     vars = ((src01, wgt01), (src02, wgt02), (src03, wgt03), (src04, wgt04))
     for i, sw in enumerate(vars):
