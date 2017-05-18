@@ -1,3 +1,5 @@
+from salishsea_tools import grid_tools
+
 from IPython import embed
 import netCDF4 as nc
 import scipy.interpolate as spi
@@ -41,9 +43,6 @@ ndata=ndata.reshape(s1.shape)
 
 
 
-
-
-
 # We can /approximately/ verify by griddata; NEMO's weights file uses spherical
 # coordinates for the remapping, while griddata does not, so expect some differences.
 
@@ -60,6 +59,13 @@ with nc.Dataset(opsfile) as f:
 
 # Call griddata
 gdata=spi.griddata((olon.flatten(),olat.flatten()),odata.flatten(),(nlon.flatten(),nlat.flatten()))
-gdata=gdata.reshape(odata.shape)
+gdata=gdata.reshape(s1.shape)
+
+
+
+# Check that the grid_tools version is doing the same thing
+matrix, nemosize = grid_tools.build_matrix(weightsfile, opsfile)
+ndata2 = grid_tools.use_matrix(opsfile, matrix, nemosize, 'tair', 0)
+print(np.max(np.abs(ndata-ndata2)))
 
 embed()
