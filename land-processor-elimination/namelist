@@ -15,7 +15,7 @@
 ! njzoom = j -index of point (1,1) of the zoomed region/ jpjdta
 !
 &NAMSPACE
-    jpk=40
+    jpk    = 40
     jpiglo =  398
     jpjglo =  898
     jpidta =  398
