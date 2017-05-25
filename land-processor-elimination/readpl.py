@@ -47,24 +47,24 @@ jpni,jpnj,jpi,jpj,nw,nl,n,r,ar = filt(jpnj > 2)
 jpni,jpnj,jpi,jpj,nw,nl,n,r,ar = filt(nw <= 384)
 jpni,jpnj,jpi,jpj,nw,nl,n,r,ar = filt(r < 1)
 
-# Produce the lookup table for salishsea command
+# Produce the lookup table for the salishsea command
 LUT = np.vstack((jpni,jpnj,nw)).T
-np.savetxt('salish.csv', LUT, fmt='%g', delimiter=',')
+np.savetxt('lpe_lookup_table.csv', LUT, fmt='%g', delimiter=',')
 
 head = ("MPI breakdown  Water  Land  r      Tile size        Tile aspect\n")
 line = ("=============  =====  ====  =====  ===============  ===========\n")
 
-# Produce the complete table
-with open('LPE-SalishSea-complete.rst', 'w') as f:
-    title="All decompositions"
-    stars='*'*len(title)
-    f.write(stars+'\n'+title+'\n'+stars+'\n\n')
-    f.write(line+head+line)
-    jpni,jpnj,jpi,jpj,nw,nl,n,r,ar = filt(np.argsort(nw))  # Sort by nw
-    for i, _ in enumerate(n):
-        f.write("{:>3d}x{:<3d} = {:3d}   {:3d}   {:3d}   {:.3f}  {:>3d}x{:<3d} = {:5d}   {:.3f}\n"
-               .format(jpni[i],jpnj[i],n[i],nw[i],nl[i],r[i],jpi[i],jpj[i],jpi[i]*jpj[i],ar[i]))
-    f.write(line)
+# Produce the complete table in restructured text
+#with open('LPE-SalishSea-complete.rst', 'w') as f:
+#    title="All decompositions"
+#    stars='*'*len(title)
+#    f.write(stars+'\n'+title+'\n'+stars+'\n\n')
+#    f.write(line+head+line)
+#    jpni,jpnj,jpi,jpj,nw,nl,n,r,ar = filt(np.argsort(nw))  # Sort by nw
+#    for i, _ in enumerate(n):
+#        f.write("{:>3d}x{:<3d} = {:3d}   {:3d}   {:3d}   {:.3f}  {:>3d}x{:<3d} = {:5d}   {:.3f}\n"
+#               .format(jpni[i],jpnj[i],n[i],nw[i],nl[i],r[i],jpi[i],jpj[i],jpi[i]*jpj[i],ar[i]))
+#    f.write(line)
 
 def writebest(f,k,jpni,jpnj,jpi,jpj,nw,nl,n,r,ar):
     def filt(idx):
@@ -83,8 +83,8 @@ def writebest(f,k,jpni,jpnj,jpi,jpj,nw,nl,n,r,ar):
         f.write("{:>3d}x{:<3d} = {:3d}   {:3d}   {:3d}   {:.3f}  {:>3d}x{:<3d} = {:5d}   {:.3f}\n"
                .format(jpni[i],jpnj[i],n[i],nw[i],nl[i],r[i],jpi[i],jpj[i],jpi[i]*jpj[i],ar[i]))
 
-# Produce the table of preferred decompositions
-with open('LPE-SalishSea-preferred.rst', 'w') as f:
+# Produce the preferred decompositions table in restructured text
+with open('preferred-decompositions.rst', 'w') as f:
     title="Preferred decompositions"
     stars='*'*len(title)
     f.write(stars+'\n'+title+'\n'+stars+'\n\n')
@@ -92,3 +92,4 @@ with open('LPE-SalishSea-preferred.rst', 'w') as f:
     for k in range(min(nw), 256+1):
         writebest(f,k,jpni,jpnj,jpi,jpj,nw,nl,n,r,ar)
     f.write(line)
+
