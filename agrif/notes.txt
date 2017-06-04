@@ -1,0 +1,4 @@
+To make the list of files to interpolate for pasting in the namelist:
+  ls rivers/R201702*     | sort | awk '{print "   \47" $1"\47,"}'
+  ls bio_climatology/*nc | sort | awk '{print "   \47" $1"\47,"}'
+
