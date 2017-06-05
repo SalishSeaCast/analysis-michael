@@ -64,8 +64,8 @@
 !   U_FILES =
 !   V_FILES =
     FLX_FILES =
-   'rivers_month_201702.nc',
-   'river_ConsTemp_month.nc',
+   'rivers/rivers_month_201702.nc',
+   'rivers/river_ConsTemp_month.nc',
    'rivers/R201702DFraCElse_y2014m09d11.nc',
    'rivers/R201702DFraCElse_y2014m09d12.nc',
    'rivers/R201702DFraCElse_y2014m09d13.nc',
