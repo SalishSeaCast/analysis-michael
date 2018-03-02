@@ -5,9 +5,9 @@
 import netCDF4 as nc
 import numpy as np
 
-from salishsea_tools.nc_tools import scDataset
+#from salishsea_tools.nc_tools import scDataset
 #import sys; sys.path.append('/home/mdunphy/MEOPAR/analysis-michael/scDataset')
-#from scDataset import scDataset
+from scDataset import scDataset
 
 NT,NZ,NY,NX = 22,24,26,28
 f,f1,f2 = '/tmp/f.nc', '/tmp/f1.nc', '/tmp/f2.nc'
