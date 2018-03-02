@@ -108,8 +108,8 @@ class _scDatasetManager(object):
 
     def __init__(self, files):
         self._files   = files
-        self._MAXOPEN = getrlimit(RLIMIT_NOFILE)[0] // 5
-        self._dslist  = [(-1, None)] * min(len(files), self._MAXOPEN)
+        self._MAXOPEN = min(len(files), getrlimit(RLIMIT_NOFILE)[0] // 5)
+        self._dslist  = [(-1, None)] * self._MAXOPEN
 
     def __getitem__(self, di):
         """
