@@ -60,7 +60,6 @@ class scDataset(object):
 
         # Open the first dataset and set a few class variables
         d0 = self._dsmgr[0]
-        self.description = d0.description
         self.file_format = d0.file_format
         self.filepath    = files
 
@@ -82,7 +81,7 @@ class scDataset(object):
         self.variables = OrderedDict()
         vars0 = d0.variables
         for vname in vars0:
-            if vars0[vname].dimensions[0] == timedimname:
+            if len(vars0[vname].dimensions) > 0 and vars0[vname].dimensions[0] == timedimname:
                 # We concatenate this variable
                 self.variables[vname] = scVariable(vars0[vname], vname, self._dsmgr, fi, li)
             else:
@@ -110,7 +109,7 @@ class _scDatasetManager(object):
     def __init__(self, files):
         self._files   = files
         self._MAXOPEN = getrlimit(RLIMIT_NOFILE)[0] // 5
-        self._dslist  = [(-1, None)] * self._MAXOPEN
+        self._dslist  = [(-1, None)] * min(len(files), self._MAXOPEN)
 
     def __getitem__(self, di):
         """
